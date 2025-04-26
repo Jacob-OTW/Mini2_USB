@@ -126,7 +126,16 @@ class YuvFormat(enum.IntEnum):
 
 class Mini2:
     def __init__(self):
-        self.dev = usb.core.find(idVendor=0x3474, idProduct=0x43c1) # IDs for Mini2
+        for vendor, product in (
+                (0x3474, 0x43c1), # IDs for 256core
+                (0x3474, 0x43d1), # IDs for 384core (?)
+                (0x3474, 0x43e1), # IDs for 640core
+        ):
+            self.dev = usb.core.find(idVendor=vendor, idProduct=product)
+            if self.dev is not None:
+                break
+        if self.dev is None:
+            raise RuntimeError("No Mini2 camera was found!")
 
     def write_command(self, command_class, command_index, sub_command, parameter_1, parameter_2):
         out_list = [command_class, command_index, sub_command, b'\x00', parameter_1, parameter_2, b'\x00\x00', b'\x00\x00']
@@ -290,5 +299,5 @@ class Mini2:
 
 
 if __name__ == '__main__':
-    pass
+    mini = Mini2()
 
